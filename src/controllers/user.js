@@ -1,9 +1,10 @@
 import User from '../models/User';
 
 class UserController {
+  // temporarely disabled
   async index(req, res) {
     try {
-      const users = await User.findAll();
+      const users = await User.findAll({ attributes: ['id', 'nome', 'email'] });
       return res.json(users);
     } catch (err) {
       return res.status(400).json({
@@ -12,10 +13,17 @@ class UserController {
     }
   }
 
+  //  temporarely disabled
   async show(req, res) {
     try {
       const user = await User.findByPk(req.params.id);
-      return res.json(user);
+
+      if (!user) {
+        return res.status(400).json({ errors: ['Usuário não existe!'] });
+      }
+      const { id, nome, email } = user; //  public data
+
+      return res.json({ id, nome, email });
     } catch (err) {
       return res.status(400).json({
         errors: err.errors.map((error) => error.message),
@@ -26,8 +34,9 @@ class UserController {
   async create(req, res) {
     try {
       const novoUser = await User.create(req.body);
+      const { id, nome, email } = novoUser; //  public data
 
-      return res.json(novoUser);
+      return res.json({ id, nome, email });
     } catch (err) {
       return res.status(400).json({
         errors: err.errors.map((error) => error.message),
@@ -37,13 +46,13 @@ class UserController {
 
   async update(req, res) {
     try {
-      if (!req.params.id) {
+      if (!req.userId) {
         return res.status(400).json({
-          errors: ['Id não enviado!'],
+          errors: ['Acesso autorizado somente por login!'],
         });
       }
 
-      const user = await User.findByPk(req.params.id);
+      const user = await User.findByPk(req.userId);
 
       if (!user) {
         return res.status(400).json({
@@ -52,8 +61,9 @@ class UserController {
       }
 
       const novosDados = await user.update(req.body);
+      const { id, nome, email } = novosDados; //  public data
 
-      return res.json(novosDados);
+      return res.json({ id, nome, email });
     } catch (err) {
       return res.status(400).json({
         errors: err.errors.map((error) => error.message),
@@ -63,13 +73,13 @@ class UserController {
 
   async delete(req, res) {
     try {
-      if (!req.params.id) {
+      if (!req.userId) {
         return res.status(400).json({
-          errors: ['Id não enviado!'],
+          errors: ['Acesso autorizado somente por login!'],
         });
       }
 
-      const user = await User.findByPk(req.params.id);
+      const user = await User.findByPk(req.userId);
 
       if (!user) {
         return res.status(400).json({
@@ -79,7 +89,7 @@ class UserController {
 
       await user.destroy();
 
-      return res.json(null);
+      return res.json(true);
     } catch (err) {
       return res.status(400).json({
         errors: err.errors.map((error) => error.message),
