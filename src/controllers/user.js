@@ -89,7 +89,7 @@ class UserController {
 
       await user.destroy();
 
-      return res.json(true);
+      return res.json({ apagado: true });
     } catch (err) {
       return res.status(400).json({
         errors: err.errors.map((error) => error.message),
